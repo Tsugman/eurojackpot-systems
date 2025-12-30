@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <title>Eurojackpot Stats & Systems</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Eurojackpot Stats & Systems</h1>
+    <p>Προσωπικό εργαλείο στατιστικής ανάλυσης Eurojackpot.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>1. Ανανέωση κληρώσεων</h2>
+      <p>Η εφαρμογή χρησιμοποιεί τα επίσημα αποτελέσματα Eurojackpot από το opap.gr.</p>
+
+      <label>
+        <span>Από ημερομηνία (YYYY-MM-DD):</span>
+        <input type="text" id="from-date" placeholder="2025-01-01" />
+      </label>
+
+      <label>
+        <span>Έως ημερομηνία (YYYY-MM-DD):</span>
+        <input type="text" id="to-date" placeholder="2025-12-31" />
+      </label>
+
+      <button id="fetch-btn">Ανανέωση από OPAP</button>
+      <button id="clear-data-btn">Καθαρισμός δεδομένων</button>
+      <p id="fetch-status"></p>
+    </section>
+
+    <section>
+      <h2>2. Στατιστικά αριθμών</h2>
+      <button id="recalc-stats-btn">Υπολόγισε στατιστικά</button>
+
+      <div class="stats-grid">
+        <div class="card">
+          <h3>Κύριοι αριθμοί (1–50)</h3>
+          <ul id="main-stats"></ul>
+        </div>
+
+        <div class="card">
+          <h3>Euro numbers (1–12)</h3>
+          <ul id="euro-stats"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. Απλές προβλέψεις</h2>
+      <p>Δημιουργία μίας πρότασης 5+2 για την επόμενη κλήρωση.</p>
+
+      <div class="buttons-row">
+        <button class="simple-suggest-btn" data-mode="freq">Με βάση συχνότητα</button>
+        <button class="simple-suggest-btn" data-mode="delay">Με βάση καθυστέρηση</button>
+        <button class="simple-suggest-btn" data-mode="mixed">Μικτό</button>
+        <button class="simple-suggest-btn" data-mode="random">Τυχαία</button>
+      </div>
+
+      <div id="simple-suggestion-output" class="card"></div>
+    </section>
+
+    <section>
+      <h2>4. Συστήματα 7 / 8 / 9 αριθμών</h2>
+      <p>Φτιάξε πλήρη ή μεταβλητά συστήματα με 7, 8 ή 9 αριθμούς.</p>
+
+      <div class="card">
+        <h3>Επιλογή αριθμών συστήματος</h3>
+
+        <label>
+          <span>Μέγεθος συστήματος:</span>
+          <select id="system-size-select">
+            <option value="7">7 αριθμοί</option>
+            <option value="8">8 αριθμοί</option>
+            <option value="9">9 αριθμοί</option>
+          </select>
+        </label>
+
+        <p id="system-comb-info" class="info-text"></p>
+
+        <label>
+          <span>Μέθοδος αυτόματης επιλογής:</span>
+          <select id="system-auto-method-select">
+            <option value="freq">Συχνότητα</option>
+            <option value="mixed">Μικτό</option>
+          </select>
+        </label>
+
+        <button id="system-auto-btn">Αυτόματη επιλογή αριθμών</button>
+
+        <label>
+          <span>Ή γράψε τους αριθμούς (με κόμμα):</span>
+          <input type="text" id="system-main-input" placeholder="π.χ. 3,7,14,22,30,35,40" />
+        </label>
+
+        <label>
+          <span>Τύπος συστήματος:</span>
+          <select id="system-type-select">
+            <option value="full">Πλήρες</option>
+            <option value="partial">Μεταβλητό</option>
+          </select>
+        </label>
+
+        <label id="partial-count-wrapper">
+          <span>Πόσα δελτία (αν μεταβλητό):</span>
+          <input type="number" id="partial-count-input" min="1" max="200" value="10" />
+        </label>
+
+        <button id="generate-system-btn">Παραγωγή συστήματος</button>
+      </div>
+
+      <div class="card">
+        <h3>Αποτελέσματα συστήματος</h3>
+        <p id="system-info"></p>
+        <ul id="system-output"></ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. Σημαντική σημείωση</h2>
+      <p>
+        Η εφαρμογή είναι στατιστικό εργαλείο ψυχαγωγίας.  
+        Δεν αυξάνει πραγματικά τις πιθανότητες κέρδους.
+      </p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
