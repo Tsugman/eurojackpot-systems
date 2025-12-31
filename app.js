@@ -52,12 +52,12 @@ function saveDraws(draws) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(draws));
 }
 
-// ---------------- Fetch από OPAP με CORS Proxy ----------------
-// Χρησιμοποιούμε proxy για να παρακάμψουμε το CORS block του OPAP
+// ---------------- Fetch από OPAP με AllOrigins Proxy ----------------
+// Παρακάμπτουμε CORS με το https://api.allorigins.win/raw?url=
 
 async function fetchDraws(fromDate, toDate) {
   const target = `https://api.opap.gr/draws/v3.0/5104/draw-date/${fromDate}/${toDate}`;
-  const url = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+  const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
 
   const res = await fetch(url);
 
