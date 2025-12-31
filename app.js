@@ -52,11 +52,13 @@ function saveDraws(draws) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(draws));
 }
 
-// ---------------- Fetch από OPAP ----------------
-// 🔥 ΔΙΟΡΘΩΜΕΝΟ ENDPOINT → 5104 (ΟΧΙ 5108)
+// ---------------- Fetch από OPAP με CORS Proxy ----------------
+// Χρησιμοποιούμε proxy για να παρακάμψουμε το CORS block του OPAP
 
 async function fetchDraws(fromDate, toDate) {
-  const url = `https://api.opap.gr/draws/v3.0/5104/draw-date/${fromDate}/${toDate}`;
+  const target = `https://api.opap.gr/draws/v3.0/5104/draw-date/${fromDate}/${toDate}`;
+  const url = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+
   const res = await fetch(url);
 
   if (!res.ok) throw new Error("API error");
