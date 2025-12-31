@@ -1,160 +1,44 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-  <meta charset="UTF-8" />
-  <title>Eurojackpot Stats & Systems</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eurojackpot Live</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    .box {
+      background: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Eurojackpot Stats & Systems</h1>
-    <p>Προσωπικό εργαλείο στατιστικής ανάλυσης Eurojackpot.</p>
-  </header>
 
-  <main>
-    <section>
-      <h2>1. Ανανέωση κληρώσεων</h2>
-      <p>Η εφαρμογή χρησιμοποιεί τα επίσημα αποτελέσματα Eurojackpot από το opap.gr.</p>
+  <h1>Eurojackpot Live Results</h1>
 
-      <label>
-        <span>Από ημερομηνία (YYYY-MM-DD):</span>
-        <input type="text" id="from-date" placeholder="2025-01-01" />
-      </label>
-
-      <label>
-        <span>Έως ημερομηνία (YYYY-MM-DD):</span>
-        <input type="text" id="to-date" placeholder="2025-12-31" />
-      </label>
-
-      <button id="fetch-btn">Ανανέωση από OPAP</button>
-      <button id="clear-data-btn">Καθαρισμός δεδομένων</button>
-      <p id="fetch-status"></p>
-    </section>
-
-    <section>
-      <h2>2. Στατιστικά αριθμών</h2>
-      <button id="recalc-stats-btn">Υπολόγισε στατιστικά</button>
-
-      <div class="stats-grid">
-        <div class="card">
-          <h3>Κύριοι αριθμοί (1–50)</h3>
-          <ul id="main-stats"></ul>
-        </div>
-
-        <div class="card">
-          <h3>Euro numbers (1–12)</h3>
-          <ul id="euro-stats"></ul>
-        </div>
-      </div>
-    </section>
-
-    <section>
-  <h2>3. Απλές προβλέψεις</h2>
-  <p>Δημιουργία 5άδων για την επόμενη κλήρωση, με βάση τα στατιστικά.</p>
-
-  <div class="card">
-    <h3>Παραγωγή 5άδων</h3>
-
-    <label>
-      <span>Τρόπος επιλογής:</span>
-      <select id="five-mode-select">
-        <option value="freq">Συχνότητα</option>
-        <option value="delay">Καθυστέρηση</option>
-        <option value="mixed">Μικτό</option>
-        <option value="random">Τυχαίο</option>
-      </select>
-    </label>
-
-    <label>
-      <span>Πόσες 5άδες θέλεις:</span>
-      <input type="number" id="five-count-input" min="1" max="200" value="1" />
-    </label>
-
-    <button id="generate-five-btn">Παραγωγή 5άδων</button>
+  <div class="box">
+    <h2>Τελευταία Κλήρωση</h2>
+    <p><strong>Αριθμοί:</strong> <span id="lastNumbers"></span></p>
+    <p><strong>Bonus:</strong> <span id="lastBonus"></span></p>
+    <p><strong>ID Κλήρωσης:</strong> <span id="lastDrawId"></span></p>
   </div>
 
-  <div class="card">
-    <h3>Αποτελέσματα 5άδων</h3>
-    <ul id="five-output"></ul>
+  <div class="box">
+    <h2>Επόμενη Κλήρωση</h2>
+    <p><strong>ID:</strong> <span id="nextDrawId"></span></p>
   </div>
-</section>
 
-
-
-
-
-
-
-
-
-
-
-    <section>
-      <h2>4. Συστήματα 7 / 8 / 9 αριθμών</h2>
-      <p>Φτιάξε πλήρη ή μεταβλητά συστήματα με 7, 8 ή 9 αριθμούς.</p>
-
-      <div class="card">
-        <h3>Επιλογή αριθμών συστήματος</h3>
-
-        <label>
-          <span>Μέγεθος συστήματος:</span>
-          <select id="system-size-select">
-            <option value="7">7 αριθμοί</option>
-            <option value="8">8 αριθμοί</option>
-            <option value="9">9 αριθμοί</option>
-          </select>
-        </label>
-
-        <p id="system-comb-info" class="info-text"></p>
-
-        <label>
-          <span>Μέθοδος αυτόματης επιλογής:</span>
-          <select id="system-auto-method-select">
-            <option value="freq">Συχνότητα</option>
-            <option value="mixed">Μικτό</option>
-          </select>
-        </label>
-
-        <button id="system-auto-btn">Αυτόματη επιλογή αριθμών</button>
-
-        <label>
-          <span>Ή γράψε τους αριθμούς (με κόμμα):</span>
-          <input type="text" id="system-main-input" placeholder="π.χ. 3,7,14,22,30,35,40" />
-        </label>
-
-        <label>
-          <span>Τύπος συστήματος:</span>
-          <select id="system-type-select">
-            <option value="full">Πλήρες</option>
-            <option value="partial">Μεταβλητό</option>
-          </select>
-        </label>
-
-        <label id="partial-count-wrapper">
-          <span>Πόσα δελτία (αν μεταβλητό):</span>
-          <input type="number" id="partial-count-input" min="1" max="200" value="10" />
-        </label>
-
-        <button id="generate-system-btn">Παραγωγή συστήματος</button>
-      </div>
-
-      <div class="card">
-        <h3>Αποτελέσματα συστήματος</h3>
-        <p id="system-info"></p>
-        <ul id="system-output"></ul>
-      </div>
-    </section>
-
-    <section>
-      <h2>5. Σημαντική σημείωση</h2>
-      <p>
-        Η εφαρμογή είναι στατιστικό εργαλείο ψυχαγωγίας.  
-        Δεν αυξάνει πραγματικά τις πιθανότητες κέρδους.
-      </p>
-    </section>
-  </main>
+  <p id="error" style="color:red;"></p>
 
   <script src="app.js"></script>
 </body>
