@@ -4,16 +4,15 @@ const MAIN_MAX = 45;
 const JOKER_MIN = 1;
 const JOKER_MAX = 20;
 
-// Πόσες προηγούμενες κληρώσεις θα χρησιμοποιούμε
-const HISTORY_DRAWS = 50;
-
 let statsReady = false;
 let mainFrequency = [];
 let mainDelay = [];
 let jokerFrequency = [];
 let jokerDelay = [];
 
+// -----------------------------
 // Φόρτωση τελευταίας κλήρωσης
+// -----------------------------
 async function loadLastDraw() {
   const url =
     "https://eurojackpot-systems.vercel.app/api/proxy?url=https://api.opap.gr/draws/v3.0/5104/last-result-and-active";
@@ -38,28 +37,45 @@ async function loadLastDraw() {
   }
 }
 
-// Φόρτωση ιστορικού κληρώσεων
+// --------------------------------------------------
+// PATCHED loadHistory() με fallback 100 → 50 → 30 → 20
+// --------------------------------------------------
 async function loadHistory() {
-  const url =
-    "https://eurojackpot-systems.vercel.app/api/proxy?url=https://api.opap.gr/draws/v3.0/5104/last/" +
-    HISTORY_DRAWS;
+  const tries = [100, 50, 30, 20];
 
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
+  for (let amount of tries) {
+    const url =
+      "https://eurojackpot-systems.vercel.app/api/proxy?url=https://api.opap.gr/draws/v3.0/5104/last/" +
+      amount;
 
-    computeStats(data.content);
-    statsReady = true;
-    document.getElementById("statsStatus").innerText =
-      "Στατιστικά έτοιμα από " + HISTORY_DRAWS + " κληρώσεις.";
-  } catch (error) {
-    console.error("Error loading history:", error);
-    document.getElementById("statsStatus").innerText =
-      "Αποτυχία φόρτωσης στατιστικών. Θα χρησιμοποιηθεί μόνο τυχαία επιλογή.";
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!data || !data.content || data.content.length === 0) {
+        throw new Error("Empty history");
+      }
+
+      computeStats(data.content);
+      statsReady = true;
+
+      document.getElementById("statsStatus").innerText =
+        "Στατιστικά έτοιμα από " + amount + " κληρώσεις.";
+
+      return; // ΤΕΛΟΣ – επιτυχία
+    } catch (e) {
+      console.warn("Αποτυχία φόρτωσης " + amount + " κληρώσεων.");
+    }
   }
+
+  // Αν αποτύχουν όλα
+  document.getElementById("statsStatus").innerText =
+    "Αποτυχία φόρτωσης στατιστικών. Θα χρησιμοποιηθεί μόνο τυχαία επιλογή.";
 }
 
+// ---------------------------------------------
 // Υπολογισμός συχνότητας & καθυστέρησης
+// ---------------------------------------------
 function computeStats(draws) {
   mainFrequency = Array(MAIN_MAX + 1).fill(0);
   mainDelay = Array(MAIN_MAX + 1).fill(0);
@@ -71,13 +87,8 @@ function computeStats(draws) {
     const main = draw.winningNumbers.list;
     const bonus = draw.winningNumbers.bonus;
 
-    main.forEach((n) => {
-      mainFrequency[n]++;
-    });
-
-    bonus.forEach((b) => {
-      jokerFrequency[b]++;
-    });
+    main.forEach((n) => mainFrequency[n]++);
+    bonus.forEach((b) => jokerFrequency[b]++);
   });
 
   // Καθυστέρηση
@@ -85,45 +96,40 @@ function computeStats(draws) {
   const seenJoker = Array(JOKER_MAX + 1).fill(false);
 
   for (let i = 0; i < draws.length; i++) {
-    const draw = draws[i];
-    const main = draw.winningNumbers.list;
-    const bonus = draw.winningNumbers.bonus;
+    const main = draws[i].winningNumbers.list;
+    const bonus = draws[i].winningNumbers.bonus;
 
     for (let n = MAIN_MIN; n <= MAIN_MAX; n++) {
-      if (!seenMain[n]) {
-        mainDelay[n]++;
-      }
+      if (!seenMain[n]) mainDelay[n]++;
     }
     for (let j = JOKER_MIN; j <= JOKER_MAX; j++) {
-      if (!seenJoker[j]) {
-        jokerDelay[j]++;
-      }
+      if (!seenJoker[j]) jokerDelay[j]++;
     }
 
-    main.forEach((n) => {
-      seenMain[n] = true;
-    });
-    bonus.forEach((b) => {
-      seenJoker[b] = true;
-    });
+    main.forEach((n) => (seenMain[n] = true));
+    bonus.forEach((b) => (seenJoker[b] = true));
   }
 }
 
+// -----------------------------
 // Τυχαίος ακέραιος
+// -----------------------------
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// -----------------------------
 // Μοναδικά νούμερα
+// -----------------------------
 function generateUniqueNumbers(count, min, max) {
   const set = new Set();
-  while (set.size < count) {
-    set.add(randInt(min, max));
-  }
+  while (set.size < count) set.add(randInt(min, max));
   return Array.from(set).sort((a, b) => a - b);
 }
 
+// ---------------------------------------------
 // Επιλογή αριθμών με στρατηγική
+// ---------------------------------------------
 function pickNumbersByStrategy(count, strategy, freqArr, delayArr, min, max) {
   if (!statsReady || strategy === "random") {
     return generateUniqueNumbers(count, min, max);
@@ -141,19 +147,16 @@ function pickNumbersByStrategy(count, strategy, freqArr, delayArr, min, max) {
     });
   }
 
-  if (strategy === "freq") {
-    pool.sort((a, b) => b.scoreFreq - a.scoreFreq);
-  } else if (strategy === "delay") {
-    pool.sort((a, b) => b.scoreDelay - a.scoreDelay);
-  } else if (strategy === "mixed") {
-    pool.sort((a, b) => b.scoreMixed - a.scoreMixed);
-  }
+  if (strategy === "freq") pool.sort((a, b) => b.scoreFreq - a.scoreFreq);
+  else if (strategy === "delay") pool.sort((a, b) => b.scoreDelay - a.scoreDelay);
+  else if (strategy === "mixed") pool.sort((a, b) => b.scoreMixed - a.scoreMixed);
 
-  const chosen = pool.slice(0, count).map((x) => x.n);
-  return chosen.sort((a, b) => a - b);
+  return pool.slice(0, count).map((x) => x.n).sort((a, b) => a - b);
 }
 
+// ---------------------------------------------
 // Επιλογή Τζόκερ με στρατηγική
+// ---------------------------------------------
 function pickJokerByStrategy(strategy) {
   if (!statsReady || strategy === "random") {
     return randInt(JOKER_MIN, JOKER_MAX);
@@ -171,70 +174,50 @@ function pickJokerByStrategy(strategy) {
     });
   }
 
-  if (strategy === "freq") {
-    pool.sort((a, b) => b.scoreFreq - a.scoreFreq);
-  } else if (strategy === "delay") {
-    pool.sort((a, b) => b.scoreDelay - a.scoreDelay);
-  } else if (strategy === "mixed") {
-    pool.sort((a, b) => b.scoreMixed - a.scoreMixed);
-  }
+  if (strategy === "freq") pool.sort((a, b) => b.scoreFreq - a.scoreFreq);
+  else if (strategy === "delay") pool.sort((a, b) => b.scoreDelay - a.scoreDelay);
+  else if (strategy === "mixed") pool.sort((a, b) => b.scoreMixed - a.scoreMixed);
 
   return pool[0].n;
 }
 
+// -----------------------------
 // Πλήρης στήλη 5+1
+// -----------------------------
 function generateFullLine(strategy) {
-  const main = pickNumbersByStrategy(
-    5,
-    strategy,
-    mainFrequency,
-    mainDelay,
-    MAIN_MIN,
-    MAIN_MAX
-  );
-  const joker = pickJokerByStrategy(strategy);
-  return { main, joker };
+  return {
+    main: pickNumbersByStrategy(5, strategy, mainFrequency, mainDelay, MAIN_MIN, MAIN_MAX),
+    joker: pickJokerByStrategy(strategy),
+  };
 }
 
-// Πλήρες σύστημα Ν αριθμών + 1 Τζόκερ
+// -----------------------------
+// Πλήρες σύστημα Ν αριθμών
+// -----------------------------
 function generateFullSystem(n, strategy) {
-  const main = pickNumbersByStrategy(
-    n,
-    strategy,
-    mainFrequency,
-    mainDelay,
-    MAIN_MIN,
-    MAIN_MAX
-  );
-  const joker = pickJokerByStrategy(strategy);
-  return { main, joker };
+  return {
+    main: pickNumbersByStrategy(n, strategy, mainFrequency, mainDelay, MAIN_MIN, MAIN_MAX),
+    joker: pickJokerByStrategy(strategy),
+  };
 }
 
-// Μεταβλητό σύστημα Ν αριθμών + 1 Τζόκερ
+// -----------------------------
+// Μεταβλητό σύστημα Ν αριθμών
+// -----------------------------
 function generateVariableSystem(n, strategy) {
-  const main = pickNumbersByStrategy(
-    n,
-    strategy,
-    mainFrequency,
-    mainDelay,
-    MAIN_MIN,
-    MAIN_MAX
-  );
-  const joker = pickJokerByStrategy(strategy);
-  return { main, joker };
+  return {
+    main: pickNumbersByStrategy(n, strategy, mainFrequency, mainDelay, MAIN_MIN, MAIN_MAX),
+    joker: pickJokerByStrategy(strategy),
+  };
 }
 
+// -----------------------------
 // Δημιουργία προβλέψεων
+// -----------------------------
 function generatePredictions() {
   const strategy = document.getElementById("strategy").value;
-  const fullCount = parseInt(
-    document.getElementById("fullCount").value || "3",
-    10
-  );
-  const lineCount = parseInt(
-    document.getElementById("lineCount").value || "5",
-    10
-  );
+  const fullCount = parseInt(document.getElementById("fullCount").value || "3", 10);
+  const lineCount = parseInt(document.getElementById("lineCount").value || "5", 10);
 
   const linesContainer = document.getElementById("fullLines");
   const fullContainer = document.getElementById("fullSystems");
@@ -248,9 +231,7 @@ function generatePredictions() {
   for (let i = 0; i < lineCount; i++) {
     const line = generateFullLine(strategy);
     const p = document.createElement("p");
-    p.textContent = `Στήλη ${i + 1}: ${line.main.join(
-      ", "
-    )} + Τζόκερ ${line.joker}`;
+    p.textContent = `Στήλη ${i + 1}: ${line.main.join(", ")} + Τζόκερ ${line.joker}`;
     linesContainer.appendChild(p);
   }
 
@@ -262,9 +243,7 @@ function generatePredictions() {
     for (let i = 0; i < fullCount; i++) {
       const sys = generateFullSystem(size, strategy);
       const p = document.createElement("p");
-      p.textContent = `Στήλη ${i + 1}: ${sys.main.join(
-        ", "
-      )} + Τζόκερ ${sys.joker}`;
+      p.textContent = `Στήλη ${i + 1}: ${sys.main.join(", ")} + Τζόκερ ${sys.joker}`;
       div.appendChild(p);
     }
     fullContainer.appendChild(div);
@@ -275,14 +254,14 @@ function generatePredictions() {
   sizesVar.forEach((size) => {
     const sys = generateVariableSystem(size, strategy);
     const p = document.createElement("p");
-    p.textContent = `Μεταβλητό σύστημα ${size} αριθμών: ${sys.main.join(
-      ", "
-    )} + Τζόκερ ${sys.joker}`;
+    p.textContent = `Μεταβλητό σύστημα ${size} αριθμών: ${sys.main.join(", ")} + Τζόκερ ${sys.joker}`;
     varContainer.appendChild(p);
   });
 }
 
-// Εκκίνηση
+// -----------------------------
+// Εκκίνηση εφαρμογής
+// -----------------------------
 window.addEventListener("load", () => {
   loadLastDraw();
   loadHistory();
