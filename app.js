@@ -53,11 +53,14 @@ function saveDraws(draws) {
 }
 
 // ---------------- Fetch από OPAP ----------------
+// 🔥 ΔΙΟΡΘΩΜΕΝΟ ENDPOINT → 5104 (ΟΧΙ 5108)
 
 async function fetchDraws(fromDate, toDate) {
-  const url = `https://api.opap.gr/draws/v3.0/5108/draw-date/${fromDate}/${toDate}`;
+  const url = `https://api.opap.gr/draws/v3.0/5104/draw-date/${fromDate}/${toDate}`;
   const res = await fetch(url);
+
   if (!res.ok) throw new Error("API error");
+
   const data = await res.json();
   if (!Array.isArray(data.content)) return [];
 
