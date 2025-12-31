@@ -3,42 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eurojackpot Live</title>
+  <title>Τζόκερ – Προβλέψεις & Συστήματα</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background: #f4f4f4;
+      background: #111;
+      color: #f4f4f4;
     }
     .box {
-      background: white;
+      background: #1e1e1e;
       padding: 15px;
       margin-bottom: 15px;
       border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
     }
-    h2 {
+    h1, h2 {
       margin-top: 0;
+      color: #ffd700;
+    }
+    button {
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: none;
+      background: #ffd700;
+      color: #111;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #ffea70;
+    }
+    .small {
+      font-size: 0.9em;
+      color: #ccc;
+    }
+    input, select {
+      padding: 5px;
+      margin: 5px 0;
+      border-radius: 4px;
+      border: 1px solid #444;
+      background: #222;
+      color: #f4f4f4;
+    }
+    label {
+      display: block;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
 
-  <h1>Eurojackpot Live Results</h1>
+  <h1>Τζόκερ – Προβλέψεις & Συστήματα</h1>
 
   <div class="box">
-    <h2>Τελευταία Κλήρωση</h2>
+    <h2>Τελευταία Κλήρωση ΟΠΑΠ</h2>
     <p><strong>Αριθμοί:</strong> <span id="lastNumbers"></span></p>
-    <p><strong>Bonus:</strong> <span id="lastBonus"></span></p>
+    <p><strong>Τζόκερ:</strong> <span id="lastBonus"></span></p>
     <p><strong>ID Κλήρωσης:</strong> <span id="lastDrawId"></span></p>
+    <p><strong>Επόμενη Κλήρωση ID:</strong> <span id="nextDrawId"></span></p>
+    <p id="statsStatus" class="small">Φόρτωση στατιστικών...</p>
   </div>
 
   <div class="box">
-    <h2>Επόμενη Κλήρωση</h2>
-    <p><strong>ID:</strong> <span id="nextDrawId"></span></p>
+    <h2>Ρυθμίσεις Προβλέψεων</h2>
+    <label>
+      Στρατηγική:
+      <select id="strategy">
+        <option value="freq">Συχνότητα (hot)</option>
+        <option value="delay">Καθυστέρηση (cold)</option>
+        <option value="mixed">Μικτή (ισορροπημένη)</option>
+        <option value="random">Τυχαία</option>
+      </select>
+    </label>
+    <label>
+      Πλήθος στηλών ανά πλήρες σύστημα:
+      <input type="number" id="fullCount" value="3" min="1" max="20">
+    </label>
+    <button onclick="generatePredictions()">ΓΕΝΝΑ ΠΡΟΒΛΕΨΕΙΣ</button>
   </div>
 
-  <p id="error" style="color:red;"></p>
+  <div class="box">
+    <h2>Πλήρη Συστήματα (6/7/8/9 αριθμοί + 1 Τζόκερ)</h2>
+    <div id="fullSystems" class="small"></div>
+  </div>
+
+  <div class="box">
+    <h2>Μεταβλητά Συστήματα (7/8/9 αριθμοί + 1 Τζόκερ)</h2>
+    <div id="variableSystems" class="small"></div>
+  </div>
+
+  <p id="error" style="color:#ff6b6b;"></p>
 
   <script src="app.js"></script>
 </body>
