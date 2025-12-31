@@ -51,18 +51,45 @@
     </section>
 
     <section>
-      <h2>3. Απλές προβλέψεις</h2>
-      <p>Δημιουργία μίας πρότασης 5+2 για την επόμενη κλήρωση.</p>
+  <h2>3. Απλές προβλέψεις</h2>
+  <p>Δημιουργία 5άδων για την επόμενη κλήρωση, με βάση τα στατιστικά.</p>
 
-      <div class="buttons-row">
-        <button class="simple-suggest-btn" data-mode="freq">Με βάση συχνότητα</button>
-        <button class="simple-suggest-btn" data-mode="delay">Με βάση καθυστέρηση</button>
-        <button class="simple-suggest-btn" data-mode="mixed">Μικτό</button>
-        <button class="simple-suggest-btn" data-mode="random">Τυχαία</button>
-      </div>
+  <div class="card">
+    <h3>Παραγωγή 5άδων</h3>
 
-      <div id="simple-suggestion-output" class="card"></div>
-    </section>
+    <label>
+      <span>Τρόπος επιλογής:</span>
+      <select id="five-mode-select">
+        <option value="freq">Συχνότητα</option>
+        <option value="delay">Καθυστέρηση</option>
+        <option value="mixed">Μικτό</option>
+        <option value="random">Τυχαίο</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Πόσες 5άδες θέλεις:</span>
+      <input type="number" id="five-count-input" min="1" max="200" value="1" />
+    </label>
+
+    <button id="generate-five-btn">Παραγωγή 5άδων</button>
+  </div>
+
+  <div class="card">
+    <h3>Αποτελέσματα 5άδων</h3>
+    <ul id="five-output"></ul>
+  </div>
+</section>
+
+
+
+
+
+
+
+
+
+
 
     <section>
       <h2>4. Συστήματα 7 / 8 / 9 αριθμών</h2>
