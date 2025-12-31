@@ -1,1 +1,1 @@
-# eurojackpot-systems.
+# eurojackpot-systems
