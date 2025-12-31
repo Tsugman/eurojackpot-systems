@@ -78,10 +78,19 @@
       </select>
     </label>
     <label>
+      Πλήθος στηλών 5+1:
+      <input type="number" id="lineCount" value="5" min="1" max="50">
+    </label>
+    <label>
       Πλήθος στηλών ανά πλήρες σύστημα:
       <input type="number" id="fullCount" value="3" min="1" max="20">
     </label>
     <button onclick="generatePredictions()">ΓΕΝΝΑ ΠΡΟΒΛΕΨΕΙΣ</button>
+  </div>
+
+  <div class="box">
+    <h2>Στήλες 5 αριθμοί + 1 Τζόκερ</h2>
+    <div id="fullLines" class="small"></div>
   </div>
 
   <div class="box">
