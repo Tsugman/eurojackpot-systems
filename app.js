@@ -1,11 +1,11 @@
-// Ρυθμίσεις παιχνιδιού Τζόκερ
+// Ρυθμίσεις Τζόκερ
 const MAIN_MIN = 1;
 const MAIN_MAX = 45;
 const JOKER_MIN = 1;
 const JOKER_MAX = 20;
 
-// Πόσες προηγούμενες κληρώσεις θα χρησιμοποιούμε για στατιστικά
-const HISTORY_DRAWS = 100;
+// Πόσες προηγούμενες κληρώσεις θα χρησιμοποιούμε
+const HISTORY_DRAWS = 200;
 
 let statsReady = false;
 let mainFrequency = [];
@@ -38,7 +38,7 @@ async function loadLastDraw() {
   }
 }
 
-// Φόρτωση ιστορικού κληρώσεων για στατιστικά
+// Φόρτωση ιστορικού κληρώσεων
 async function loadHistory() {
   const url =
     "https://eurojackpot-systems.vercel.app/api/proxy?url=https://api.opap.gr/draws/v3.0/5104/last/" +
@@ -80,18 +80,15 @@ function computeStats(draws) {
     });
   });
 
-  // Καθυστέρηση (πόσο καιρό έχει να εμφανιστεί)
-  // Ξεκινάμε από την πιο πρόσφατη προς την παλαιότερη
+  // Καθυστέρηση
   const seenMain = Array(MAIN_MAX + 1).fill(false);
   const seenJoker = Array(JOKER_MAX + 1).fill(false);
 
-  let delayCounter = 0;
   for (let i = 0; i < draws.length; i++) {
     const draw = draws[i];
     const main = draw.winningNumbers.list;
     const bonus = draw.winningNumbers.bonus;
 
-    // Για κάθε αριθμό που δεν έχει εμφανιστεί ακόμα, αυξάνουμε καθυστέρηση
     for (let n = MAIN_MIN; n <= MAIN_MAX; n++) {
       if (!seenMain[n]) {
         mainDelay[n]++;
@@ -103,24 +100,21 @@ function computeStats(draws) {
       }
     }
 
-    // Σημειώνουμε ότι αυτοί οι αριθμοί εμφανίστηκαν
     main.forEach((n) => {
       seenMain[n] = true;
     });
     bonus.forEach((b) => {
       seenJoker[b] = true;
     });
-
-    delayCounter++;
   }
 }
 
-// Βοηθητικό: τυχαίος ακέραιος
+// Τυχαίος ακέραιος
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Βοηθητικό: μοναδικά νούμερα
+// Μοναδικά νούμερα
 function generateUniqueNumbers(count, min, max) {
   const set = new Set();
   while (set.size < count) {
@@ -129,37 +123,34 @@ function generateUniqueNumbers(count, min, max) {
   return Array.from(set).sort((a, b) => a - b);
 }
 
-// Επιλογή αριθμών με βάση στρατηγική
+// Επιλογή αριθμών με στρατηγική
 function pickNumbersByStrategy(count, strategy, freqArr, delayArr, min, max) {
-  const nums = [];
-  const pool = [];
+  if (!statsReady || strategy === "random") {
+    return generateUniqueNumbers(count, min, max);
+  }
 
+  const pool = [];
   for (let n = min; n <= max; n++) {
     pool.push({
       n,
-      freq: freqArr ? freqArr[n] : 0,
-      delay: delayArr ? delayArr[n] : 0,
+      freq: freqArr[n],
+      delay: delayArr[n],
+      scoreFreq: freqArr[n],
+      scoreDelay: delayArr[n],
+      scoreMixed: freqArr[n] + delayArr[n],
     });
   }
 
   if (strategy === "freq") {
-    pool.sort((a, b) => b.freq - a.freq);
+    pool.sort((a, b) => b.scoreFreq - a.scoreFreq);
   } else if (strategy === "delay") {
-    pool.sort((a, b) => b.delay - a.delay);
+    pool.sort((a, b) => b.scoreDelay - a.scoreDelay);
   } else if (strategy === "mixed") {
-    pool.sort(
-      (a, b) =>
-        (b.freq + b.delay) - (a.freq + a.delay)
-    );
-  } else if (strategy === "random" || !statsReady) {
-    return generateUniqueNumbers(count, min, max);
+    pool.sort((a, b) => b.scoreMixed - a.scoreMixed);
   }
 
-  for (let i = 0; i < pool.length && nums.length < count; i++) {
-    nums.push(pool[i].n);
-  }
-
-  return nums.sort((a, b) => a - b);
+  const chosen = pool.slice(0, count).map((x) => x.n);
+  return chosen.sort((a, b) => a - b);
 }
 
 // Επιλογή Τζόκερ με στρατηγική
@@ -174,24 +165,38 @@ function pickJokerByStrategy(strategy) {
       n: j,
       freq: jokerFrequency[j],
       delay: jokerDelay[j],
+      scoreFreq: jokerFrequency[j],
+      scoreDelay: jokerDelay[j],
+      scoreMixed: jokerFrequency[j] + jokerDelay[j],
     });
   }
 
   if (strategy === "freq") {
-    pool.sort((a, b) => b.freq - a.freq);
+    pool.sort((a, b) => b.scoreFreq - a.scoreFreq);
   } else if (strategy === "delay") {
-    pool.sort((a, b) => b.delay - a.delay);
+    pool.sort((a, b) => b.scoreDelay - a.scoreDelay);
   } else if (strategy === "mixed") {
-    pool.sort(
-      (a, b) =>
-        (b.freq + b.delay) - (a.freq + a.delay)
-    );
+    pool.sort((a, b) => b.scoreMixed - a.scoreMixed);
   }
 
   return pool[0].n;
 }
 
-// Δημιουργία πλήρους συστήματος Ν αριθμών + 1 Τζόκερ
+// Πλήρης στήλη 5+1
+function generateFullLine(strategy) {
+  const main = pickNumbersByStrategy(
+    5,
+    strategy,
+    mainFrequency,
+    mainDelay,
+    MAIN_MIN,
+    MAIN_MAX
+  );
+  const joker = pickJokerByStrategy(strategy);
+  return { main, joker };
+}
+
+// Πλήρες σύστημα Ν αριθμών + 1 Τζόκερ
 function generateFullSystem(n, strategy) {
   const main = pickNumbersByStrategy(
     n,
@@ -205,7 +210,7 @@ function generateFullSystem(n, strategy) {
   return { main, joker };
 }
 
-// Δημιουργία μεταβλητού συστήματος Ν αριθμών + 1 Τζόκερ
+// Μεταβλητό σύστημα Ν αριθμών + 1 Τζόκερ
 function generateVariableSystem(n, strategy) {
   const main = pickNumbersByStrategy(
     n,
@@ -226,12 +231,28 @@ function generatePredictions() {
     document.getElementById("fullCount").value || "3",
     10
   );
+  const lineCount = parseInt(
+    document.getElementById("lineCount").value || "5",
+    10
+  );
 
+  const linesContainer = document.getElementById("fullLines");
   const fullContainer = document.getElementById("fullSystems");
   const varContainer = document.getElementById("variableSystems");
 
+  linesContainer.innerHTML = "";
   fullContainer.innerHTML = "";
   varContainer.innerHTML = "";
+
+  // Στήλες 5+1
+  for (let i = 0; i < lineCount; i++) {
+    const line = generateFullLine(strategy);
+    const p = document.createElement("p");
+    p.textContent = `Στήλη ${i + 1}: ${line.main.join(
+      ", "
+    )} + Τζόκερ ${line.joker}`;
+    linesContainer.appendChild(p);
+  }
 
   // Πλήρη συστήματα 6/7/8/9
   const sizesFull = [6, 7, 8, 9];
