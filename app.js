@@ -5,7 +5,7 @@ const JOKER_MIN = 1;
 const JOKER_MAX = 20;
 
 // Πόσες προηγούμενες κληρώσεις θα χρησιμοποιούμε
-const HISTORY_DRAWS = 200;
+const HISTORY_DRAWS = 50;
 
 let statsReady = false;
 let mainFrequency = [];
